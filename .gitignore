@@ -1,0 +1,6 @@
+.envrc
+.env
+*.key
+.idea/
+.vscode/
+go.sum

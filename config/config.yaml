@@ -1,0 +1,16 @@
+ethereum:
+  rpc_url: "https://rpc-amoy.polygon.technology"
+  contract_address: "0x743639440c8360212c277C974d80494a162Df7a9"
+  private_key: "${PRIVATE_KEY}" # 从环境变量读取
+
+vrf:
+  num_words: 3
+  gas_limit: 2500000
+  confirmations: 3
+  timeout: "5m"
+  poll_interval: "5s"
+
+log:
+  level: "info"
+  format: "json"
+  output: "stdout" # 或者指定文件路径 

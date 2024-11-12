@@ -1,0 +1,261 @@
+[
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "subscriptionId",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "nonpayable",
+        "type": "constructor"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint32",
+                "name": "gasLimit",
+                "type": "uint32"
+            }
+        ],
+        "name": "RandomNumber__InvalidCallbackGasLimit",
+        "type": "error"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "coordinator",
+                "type": "address"
+            }
+        ],
+        "name": "RandomNumber__InvalidCoordinator",
+        "type": "error"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint64",
+                "name": "subId",
+                "type": "uint64"
+            }
+        ],
+        "name": "RandomNumber__InvalidSubscriptionId",
+        "type": "error"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "requestId",
+                "type": "uint256"
+            }
+        ],
+        "name": "RandomNumber__RequestAlreadyFulfilled",
+        "type": "error"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "requestId",
+                "type": "uint256"
+            }
+        ],
+        "name": "RandomNumber__RequestNotFound",
+        "type": "error"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "requestId",
+                "type": "uint256"
+            }
+        ],
+        "name": "RandomNumber__RequestPending",
+        "type": "error"
+    },
+    {
+        "inputs": [
+
+        ],
+        "name": "RandomNumber__ZeroAddress",
+        "type": "error"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "uint256",
+                "name": "requestId",
+                "type": "uint256"
+            },
+            {
+                "indexed": true,
+                "internalType": "uint96",
+                "name": "roundId",
+                "type": "uint96"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint64",
+                "name": "timestamp",
+                "type": "uint64"
+            }
+        ],
+        "name": "RequestedRandomness",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "uint256",
+                "name": "requestId",
+                "type": "uint256"
+            },
+            {
+                "indexed": true,
+                "internalType": "uint96",
+                "name": "roundId",
+                "type": "uint96"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256[]",
+                "name": "randomNumbers",
+                "type": "uint256[]"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint64",
+                "name": "timestamp",
+                "type": "uint64"
+            }
+        ],
+        "name": "RandomnessFulfilled",
+        "type": "event"
+    },
+    {
+        "inputs": [
+
+        ],
+        "name": "getCurrentRound",
+        "outputs": [
+            {
+                "internalType": "uint96",
+                "name": "",
+                "type": "uint96"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "requestId",
+                "type": "uint256"
+            }
+        ],
+        "name": "getLatestRandomNumber",
+        "outputs": [
+            {
+                "internalType": "uint256[]",
+                "name": "",
+                "type": "uint256[]"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "requestId",
+                "type": "uint256"
+            }
+        ],
+        "name": "getRandomRequest",
+        "outputs": [
+            {
+                "components": [
+                    {
+                        "internalType": "uint96",
+                        "name": "roundId",
+                        "type": "uint96"
+                    },
+                    {
+                        "internalType": "uint256[]",
+                        "name": "randomNumbers",
+                        "type": "uint256[]"
+                    },
+                    {
+                        "internalType": "bool",
+                        "name": "fulfilled",
+                        "type": "bool"
+                    },
+                    {
+                        "internalType": "uint64",
+                        "name": "timestamp",
+                        "type": "uint64"
+                    }
+                ],
+                "internalType": "struct RandomNumber.RandomRequest",
+                "name": "",
+                "type": "tuple"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint32",
+                "name": "numWords",
+                "type": "uint32"
+            },
+            {
+                "internalType": "uint32",
+                "name": "callbackGasLimit",
+                "type": "uint32"
+            },
+            {
+                "internalType": "uint16",
+                "name": "requestConfirmations",
+                "type": "uint16"
+            }
+        ],
+        "name": "requestRandomWords",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "s_requestId",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+
+        ],
+        "name": "s_subscriptionId",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    }
+]
