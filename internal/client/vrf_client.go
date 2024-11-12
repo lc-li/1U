@@ -12,9 +12,9 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 
-	"worker-test/config"
-	"worker-test/contract"
-	"worker-test/internal/logger"
+	"1U/config"
+	"1U/contract"
+	"1U/internal/logger"
 )
 
 type VRFClient struct {

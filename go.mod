@@ -1,4 +1,4 @@
-module worker-test
+module 1U
 
 go 1.22.5
 

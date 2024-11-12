@@ -7,9 +7,9 @@ import (
 	"os/signal"
 	"syscall"
 
-	"worker-test/config"
-	"worker-test/internal/client"
-	"worker-test/internal/logger"
+	"1U/config"
+	"1U/internal/client"
+	"1U/internal/logger"
 )
 
 func main() {
