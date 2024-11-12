@@ -1,16 +1,26 @@
 ethereum:
-  rpc_url: "https://rpc-amoy.polygon.technology"
-  contract_address: "0x743639440c8360212c277C974d80494a162Df7a9"
+  # Polygon 测试网
+  # rpc_url: "https://rpc-amoy.polygon.technology"
+  # contract_address: "0x743639440c8360212c277C974d80494a162Df7a9"
+  # BNB 测试网 
+  # rpc_url: "https://data-seed-prebsc-1-s1.binance.org:8545"
+  # rpc_url: "https://data-seed-prebsc-1-s2.binance.org:8545"
+  # rpc_url: "https://data-seed-prebsc-1-s3.binance.org:8545"
+  rpc_url: "https://data-seed-prebsc-2-s1.binance.org:8545"
+  # rpc_url: "https://data-seed-prebsc-2-s2.binance.org:8545"
+  # rpc_url: "https://data-seed-prebsc-2-s3.binance.org:8545"
+  contract_address: "0xb921052b1b64cD12A3D4B6d51eFc0fa329E4A229"
   private_key: "${PRIVATE_KEY}" # 从环境变量读取
 
 vrf:
-  num_words: 3
+  num_words: 1
   gas_limit: 2500000
   confirmations: 3
   timeout: "5m"
-  poll_interval: "5s"
+  poll_interval: "10s"
 
 log:
   level: "info"
   format: "json"
   output: "stdout" # 或者指定文件路径 
+  time_format: "2006-01-02 15:04:05.000" # 添加 .000 来显示毫秒
