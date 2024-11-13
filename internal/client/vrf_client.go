@@ -61,8 +61,8 @@ func NewVRFClient(ctx context.Context, cfg *config.Config) (*VRFClient, error) {
 		fromAddress:   fromAddress,
 		pollInterval:  cfg.VRF.PollInterval,
 		config:        cfg,
-		retryInterval: 5 * time.Second, // 可以通过配置文件设置
-		maxRetries:    3,               // 可以通过配置文件设置
+		retryInterval: cfg.VRF.Retry.Interval,
+		maxRetries:    cfg.VRF.Retry.MaxRetries,
 	}
 
 	// 并行初始化网络
@@ -145,7 +145,7 @@ func (c *VRFClient) initializeNetworkWithRetry(ctx context.Context, network conf
 }
 
 func (c *VRFClient) startHealthCheck(ctx context.Context) {
-	ticker := time.NewTicker(30 * time.Second) // 可配置的检查间隔
+	ticker := time.NewTicker(c.config.VRF.HealthCheck.Interval)
 	defer ticker.Stop()
 
 	for {

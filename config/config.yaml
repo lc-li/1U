@@ -1,22 +1,71 @@
+# 网络配置
 networks:
+  # 主网络配置 (Polygon Amoy 测试网)
   primary:
+    # 网络名称标识
     name: "polygon"
+    # RPC节点URL
     rpc_url: "https://rpc-amoy.polygon.technology"
-    contract_address: "0x743639440c8360212c277C974d80494a162Df7a9"
+    # VRF合约地址
+    contract_address: "0xA1072601Fc7a95022cadD4fC00F726Cc4bA6E43c"
+  # 备用网络配置 (BSC 测试网)
   fallback:
+    # 网络名称标识
     name: "bnb"
+    # RPC节点URL
     rpc_url: "https://data-seed-prebsc-2-s3.binance.org:8545"
+    # VRF合约地址
     contract_address: "0xb921052b1b64cD12A3D4B6d51eFc0fa329E4A229"
 
+# VRF (Verifiable Random Function) 相关配置
 vrf:
+  # 单次请求返回的随机数数量
   num_words: 100
+  # 回调函数的gas限制，用于控制合约执行成本
   gas_limit: 2500000
+  # 交易确认数，等待多少个区块确认后认为交易已完成
   confirmations: 3
+  # 整个随机数请求操作的超时时间
+  # 包括发送请求和等待结果的总时间
   timeout: "5m"
+  # 轮询间隔：检查随机数是否生成完成的间隔时间
   poll_interval: "5s"
+  # 网络切换超时：当前网络不可用时，等待多久后切换到备用网络
   network_switch_timeout: "30s"
+  
+  # 重试策略配置
+  retry:
+    # 最大重试次数：当操作失败时最多重试几次
+    max_retries: 3
+    # 重试间隔：每次重试之间等待的时间
+    interval: "5s"
+  
+  # 网络健康检查配置
+  health_check:
+    # 健康检查间隔：多久检查一次网络状态
+    interval: "30s"
+    # 健康检查超时：单次检查的超时时间
+    timeout: "5s"
 
+# 日志配置
 log:
+  # 日志级别，可选值：
+  # - debug: 调试信息，最详细的日志
+  # - info: 一般信息，默认级别
+  # - warn: 警告信息
+  # - error: 错误信息
   level: "info"
+  
+  # 日志输出格式，可选值：
+  # - console: 人类可读的格式，适合开发调试
+  # - json: 结构化格式，适合机器处理
   format: "console"
+  
+  # 日志输出目标，可选值：
+  # - stdout: 标准输出，直接打印到控制台
+  # - file: 输出到文件
   output: "stdout"
+  
+  # 日志文件路径
+  # 当 output 设置为 "file" 时生效
+  file_path: "logs/app.log"
