@@ -2,30 +2,35 @@ package config
 
 import (
 	"fmt"
-	"os"
 	"time"
 
 	"github.com/spf13/viper"
 )
 
 type Config struct {
-	Ethereum EthereumConfig `mapstructure:"ethereum"`
+	Networks NetworksConfig `mapstructure:"networks"`
 	VRF      VRFConfig      `mapstructure:"vrf"`
 	Log      LogConfig      `mapstructure:"log"`
 }
 
-type EthereumConfig struct {
+type NetworksConfig struct {
+	Primary  NetworkConfig `mapstructure:"primary"`
+	Fallback NetworkConfig `mapstructure:"fallback"`
+}
+
+type NetworkConfig struct {
+	Name            string `mapstructure:"name"`
 	RPCURL          string `mapstructure:"rpc_url"`
 	ContractAddress string `mapstructure:"contract_address"`
-	PrivateKey      string `mapstructure:"private_key"`
 }
 
 type VRFConfig struct {
-	NumWords      uint32        `mapstructure:"num_words"`
-	GasLimit      uint32        `mapstructure:"gas_limit"`
-	Confirmations uint16        `mapstructure:"confirmations"`
-	Timeout       time.Duration `mapstructure:"timeout"`
-	PollInterval  time.Duration `mapstructure:"poll_interval"`
+	NumWords             uint32        `mapstructure:"num_words"`
+	GasLimit             uint32        `mapstructure:"gas_limit"`
+	Confirmations        uint16        `mapstructure:"confirmations"`
+	Timeout              time.Duration `mapstructure:"timeout"`
+	PollInterval         time.Duration `mapstructure:"poll_interval"`
+	NetworkSwitchTimeout time.Duration `mapstructure:"network_switch_timeout"`
 }
 
 type LogConfig struct {
@@ -49,11 +54,6 @@ func LoadConfig(path string) (*Config, error) {
 	var config Config
 	if err := viper.Unmarshal(&config); err != nil {
 		return nil, fmt.Errorf("解析配置失败: %w", err)
-	}
-
-	// 从环境变量获取私钥
-	if privateKey := os.Getenv("PRIVATE_KEY"); privateKey != "" {
-		config.Ethereum.PrivateKey = privateKey
 	}
 
 	return &config, nil

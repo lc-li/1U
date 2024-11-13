@@ -31,7 +31,7 @@ func InitLogger(level, format, output string) error {
 	// 配置编码器
 	encoderConfig := zap.NewProductionEncoderConfig()
 	encoderConfig.TimeKey = "timestamp"
-	encoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
+	encoderConfig.EncodeTime = zapcore.TimeEncoderOfLayout("2006-01-02 15:04:05.000")
 
 	var encoder zapcore.Encoder
 	if format == "json" {
