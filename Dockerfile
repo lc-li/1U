@@ -30,6 +30,9 @@ RUN apk --no-cache add ca-certificates
 
 WORKDIR /root/
 
+# 创建日志目录
+RUN mkdir -p /root/logs
+
 # 从构建阶段复制二进制文件
 COPY --from=builder /app/main .
 # 复制配置文件
@@ -37,6 +40,9 @@ COPY --from=builder /app/config/config.yaml ./config/config.yaml
 
 # 设置环境变量
 ENV CONFIG_PATH="config/config.yaml"
+
+# 确保日志目录有正确的权限
+RUN chmod 755 /root/logs
 
 # 运行应用
 CMD ["./main"] 
