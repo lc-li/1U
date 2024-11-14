@@ -7,4 +7,5 @@
 .vscode/
 README.md
 docs/
-*.md 
+*.md
+# 不要忽略 go.mod 和 go.sum 

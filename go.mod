@@ -1,11 +1,13 @@
 module 1U
 
-go 1.22.5
+go 1.22
+
+toolchain go1.22.5
 
 require (
 	github.com/ethereum/go-ethereum v1.14.11
-	github.com/spf13/viper v1.19.0
-	go.uber.org/zap v1.27.0
+	github.com/spf13/viper v1.18.2
+	go.uber.org/zap v1.26.0
 )
 
 require (
@@ -30,7 +32,7 @@ require (
 	github.com/magiconair/properties v1.8.7 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/mmcloughlin/addchain v0.4.0 // indirect
-	github.com/pelletier/go-toml/v2 v2.2.2 // indirect
+	github.com/pelletier/go-toml/v2 v2.1.0 // indirect
 	github.com/sagikazarmark/locafero v0.4.0 // indirect
 	github.com/sagikazarmark/slog-shim v0.1.0 // indirect
 	github.com/shirou/gopsutil v3.21.4-0.20210419000835-c7a38de76ee5+incompatible // indirect
