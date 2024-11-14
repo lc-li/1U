@@ -1,9 +1,9 @@
 version: '3'
 
 services:
-  vrf-client:
-    image: vrf-client
-    container_name: vrf-client
+  game-server:
+    image: game-server
+    container_name: game-server
     restart: always
     environment:
       - PRIVATE_KEY=${PRIVATE_KEY}

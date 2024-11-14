@@ -16,7 +16,7 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v4
       with:
-        go-version: '1.21'
+        go-version: '1.22'
 
     - name: Generate go.sum
       run: go mod tidy
@@ -26,8 +26,8 @@ jobs:
 
     - name: Build Docker image
       run: |
-        docker build -t vrf-client .
-        docker save vrf-client > vrf-client.tar
+        docker build -t game-server .
+        docker save game-server > game-server.tar
 
     - name: Deploy to EC2
       uses: appleboy/scp-action@master
@@ -35,8 +35,47 @@ jobs:
         host: ec2-13-55-71-77.ap-southeast-2.compute.amazonaws.com
         username: ubuntu
         key: ${{ secrets.SSH_PRIVATE_KEY }}
-        source: "vrf-client.tar,docker-compose.yml"
-        target: "/home/ubuntu/vrf-client"
+        source: "game-server.tar,docker-compose.yml"
+        target: "/home/ubuntu/game-server"
+
+    - name: Install Docker on EC2
+      uses: appleboy/ssh-action@master
+      with:
+        host: ec2-13-55-71-77.ap-southeast-2.compute.amazonaws.com
+        username: ubuntu
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        script: |
+          # 更新包列表
+          sudo apt-get update
+          
+          # 安装必要的依赖
+          sudo apt-get install -y \
+            apt-transport-https \
+            ca-certificates \
+            curl \
+            gnupg \
+            lsb-release
+
+          # 添加 Docker 的官方 GPG 密钥
+          curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+
+          # 设置稳定版仓库
+          echo \
+            "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu \
+            $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+          # 更新包索引
+          sudo apt-get update
+
+          # 安装 Docker
+          sudo apt-get install -y docker-ce docker-ce-cli containerd.io
+
+          # 将当前用户添加到 docker 组
+          sudo usermod -aG docker ubuntu
+
+          # 启动 Docker
+          sudo systemctl start docker
+          sudo systemctl enable docker
 
     - name: Start application
       uses: appleboy/ssh-action@master
@@ -45,15 +84,15 @@ jobs:
         username: ubuntu
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         script: |
-          cd /home/ubuntu/vrf-client
-          docker load < vrf-client.tar
-          docker stop vrf-client || true
-          docker rm vrf-client || true
+          cd /home/ubuntu/game-server
+          docker load < game-server.tar
+          docker stop game-server || true
+          docker rm game-server || true
           docker run -d \
-            --name vrf-client \
+            --name game-server \
             --restart always \
             -e PRIVATE_KEY="${{ secrets.PRIVATE_KEY }}" \
             -e INFURA_POLYGON_URL="${{ secrets.INFURA_POLYGON_URL }}" \
             -e INFURA_BSC_URL="${{ secrets.INFURA_BSC_URL }}" \
-            vrf-client
+            game-server
           docker image prune -f
