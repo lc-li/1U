@@ -85,12 +85,17 @@ jobs:
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         script: |
           cd /home/ubuntu/game-server
+          
+          # 创建宿主机日志目录
+          mkdir -p /home/ubuntu/game-server/logs
+          
           docker load < game-server.tar
           docker stop game-server || true
           docker rm game-server || true
           docker run -d \
             --name game-server \
             --restart always \
+            -v /home/ubuntu/game-server/logs:/root/logs \
             -e PRIVATE_KEY="${{ secrets.PRIVATE_KEY }}" \
             -e INFURA_POLYGON_URL="${{ secrets.INFURA_POLYGON_URL }}" \
             -e INFURA_BSC_URL="${{ secrets.INFURA_BSC_URL }}" \

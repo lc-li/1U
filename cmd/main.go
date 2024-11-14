@@ -65,4 +65,7 @@ func main() {
 	for i, num := range randomNumbers {
 		logger.Infof("随机数 %d: %s", i+1, num.String())
 	}
+
+	for {
+	}
 }

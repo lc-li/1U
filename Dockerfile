@@ -42,7 +42,10 @@ COPY --from=builder /app/config/config.yaml ./config/config.yaml
 ENV CONFIG_PATH="config/config.yaml"
 
 # 确保日志目录有正确的权限
-RUN chmod 755 /root/logs
+RUN chmod 777 /root/logs
+
+# 创建日志目录
+VOLUME ["/root/logs"]
 
 # 运行应用
 CMD ["./main"] 
