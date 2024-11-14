@@ -1,1 +1,5 @@
 export PRIVATE_KEY="your-private-key-here"
+
+export INFURA_API_KEY="your-infura-api-key-here"
+export INFURA_POLYGON_URL="https://polygon-mumbai.infura.io/v3/${INFURA_API_KEY}"
+export INFURA_BSC_URL="https://bsc-testnet.infura.io/v3/${INFURA_API_KEY}"

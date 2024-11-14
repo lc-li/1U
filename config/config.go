@@ -2,6 +2,8 @@ package config
 
 import (
 	"fmt"
+	"os"
+	"strings"
 	"time"
 
 	"github.com/spf13/viper"
@@ -54,10 +56,26 @@ type LogConfig struct {
 
 func LoadConfig(path string) (*Config, error) {
 	viper.SetConfigFile(path)
-	viper.AutomaticEnv()
 
+	// 启用环境变量替换
+	viper.SetEnvPrefix("")
+	viper.AutomaticEnv()
+	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
+
+	// 读取配置文件
 	if err := viper.ReadInConfig(); err != nil {
 		return nil, fmt.Errorf("读取配置文件失败: %w", err)
+	}
+
+	// 处理环境变量替换
+	for _, k := range viper.AllKeys() {
+		val := viper.GetString(k)
+		if strings.HasPrefix(val, "${") && strings.HasSuffix(val, "}") {
+			envVar := strings.TrimSuffix(strings.TrimPrefix(val, "${"), "}")
+			if envVal := os.Getenv(envVar); envVal != "" {
+				viper.Set(k, envVal)
+			}
+		}
 	}
 
 	var config Config
