@@ -1,0 +1,10 @@
+.git
+.gitignore
+.env
+.envrc
+*.key
+.idea/
+.vscode/
+README.md
+docs/
+*.md 

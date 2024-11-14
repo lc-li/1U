@@ -4,16 +4,16 @@ networks:
   primary:
     # 网络名称标识
     name: "polygon"
-    # 使用环境变量配置的 Infura URL
-    rpc_url: "${INFURA_POLYGON_URL}"
+    # RPC节点URL
+    rpc_url: "https://rpc-amoy.polygon.technology"
     # VRF合约地址
     contract_address: "0xA1072601Fc7a95022cadD4fC00F726Cc4bA6E43c"
   # 备用网络配置 (BSC 测试网)
   fallback:
     # 网络名称标识
     name: "bnb"
-    # BSC 测试网可以继续使用官方节点，因为 Infura 不支持 BSC
-    rpc_url: "${INFURA_BSC_URL}"
+    # RPC节点URL
+    rpc_url: "https://data-seed-prebsc-2-s3.binance.org:8545"
     # VRF合约地址
     contract_address: "0xb921052b1b64cD12A3D4B6d51eFc0fa329E4A229"
 
