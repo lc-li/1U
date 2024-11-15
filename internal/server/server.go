@@ -34,7 +34,7 @@ func NewServer(cfg *config.Config) *Server {
 }
 
 func (s *Server) Run() error {
-	addr := fmt.Sprintf(":%d", s.Config.Server.Port)
+	addr := fmt.Sprintf("127.0.0.1:%d", s.Config.Server.Port)
 	srv := &http.Server{
 		Addr:         addr,
 		Handler:      s.Router,
@@ -42,6 +42,6 @@ func (s *Server) Run() error {
 		WriteTimeout: s.Config.Server.WriteTimeout,
 	}
 
-	logger.Infof("服务器正在运行，监听端口%s", addr)
+	logger.Infof("服务器正在运行，监听地址 %s", addr)
 	return srv.ListenAndServe()
 }

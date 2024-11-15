@@ -77,6 +77,39 @@ jobs:
           sudo systemctl start docker
           sudo systemctl enable docker
 
+    - name: Install Nginx
+      uses: appleboy/ssh-action@master
+      with:
+        host: ec2-13-55-71-77.ap-southeast-2.compute.amazonaws.com
+        username: ubuntu
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        script: |
+          sudo apt-get update
+          sudo apt-get install -y nginx
+          sudo systemctl start nginx
+          sudo systemctl enable nginx
+
+    - name: Configure Nginx
+      uses: appleboy/ssh-action@master
+      with:
+        host: ec2-13-55-71-77.ap-southeast-2.compute.amazonaws.com
+        username: ubuntu
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        script: |
+          sudo bash -c 'cat > /etc/nginx/sites-available/default << EOF
+          server {
+              listen 80;
+              server_name ec2-13-55-71-77.ap-southeast-2.compute.amazonaws.com;
+
+              location / {
+                  proxy_pass http://127.0.0.1:8080;
+                  proxy_set_header Host \$host;
+                  proxy_set_header X-Real-IP \$remote_addr;
+              }
+          }
+          EOF'
+          sudo systemctl restart nginx
+
     - name: Start application
       uses: appleboy/ssh-action@master
       with:
@@ -102,3 +135,13 @@ jobs:
             -e INFURA_BSC_URL="${{ secrets.INFURA_BSC_URL }}" \
             game-server
           docker image prune -f
+
+    - name: Install Certbot and obtain SSL certificate
+      uses: appleboy/ssh-action@master
+      with:
+        host: ec2-13-55-71-77.ap-southeast-2.compute.amazonaws.com
+        username: ubuntu
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        script: |
+          sudo apt-get install -y certbot python3-certbot-nginx
+          sudo certbot --nginx -n --agree-tos --email lc1010099@gmail.com -d ec2-13-55-71-77.ap-southeast-2.compute.amazonaws.com
