@@ -130,7 +130,7 @@ jobs:
           docker run -d \
             --name game-server \
             --restart always \
-            --network host \
+            -p 8080:8080 \
             -v /home/ubuntu/game-server/logs:/root/logs \
             -e PRIVATE_KEY="${{ secrets.PRIVATE_KEY }}" \
             -e INFURA_POLYGON_URL="${{ secrets.INFURA_POLYGON_URL }}" \

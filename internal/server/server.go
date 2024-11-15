@@ -34,7 +34,7 @@ func NewServer(cfg *config.Config) *Server {
 }
 
 func (s *Server) Run() error {
-	addr := fmt.Sprintf("127.0.0.1:%d", s.Config.Server.Port)
+	addr := fmt.Sprintf("0.0.0.0:%d", s.Config.Server.Port)
 	srv := &http.Server{
 		Addr:         addr,
 		Handler:      s.Router,
