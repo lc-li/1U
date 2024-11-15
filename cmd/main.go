@@ -1,15 +1,13 @@
 package main
 
 import (
-	"context"
 	"flag"
-	"os"
-	"os/signal"
-	"syscall"
 
 	"1U/config"
 	"1U/internal/client"
 	"1U/internal/logger"
+	"1U/internal/server"
+	"1U/internal/service"
 )
 
 func main() {
@@ -28,44 +26,21 @@ func main() {
 		panic(err)
 	}
 
-	// 创建上下文（支持优雅退出）
-	ctx, cancel := context.WithTimeout(context.Background(), cfg.VRF.Timeout)
-	defer cancel()
-
-	// 处理信号
-	sigChan := make(chan os.Signal, 1)
-	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
-	go func() {
-		<-sigChan
-		logger.Info("收到退出信号")
-		cancel()
-	}()
-
 	// 创建VRF客户端
-	vrfClient, err := client.NewVRFClient(ctx, cfg)
+	vrfClient, err := client.NewVRFClient(cfg)
 	if err != nil {
 		logger.Fatalf("创建VRF客户端失败: %v", err)
 	}
 	defer vrfClient.Close()
 
-	// 请求随机数
-	requestId, err := vrfClient.RequestRandomNumber(ctx)
-	if err != nil {
-		logger.Fatalf("请求随机数失败: %v", err)
+	// 初始化VRF服务
+	if err := service.InitVRFService(cfg, vrfClient); err != nil {
+		logger.Fatalf("初始化VRF服务失败: %v", err)
 	}
 
-	// 等待随机数结果
-	randomNumbers, err := vrfClient.WaitForRandomNumber(ctx, requestId)
-	if err != nil {
-		logger.Fatalf("等待随机数失败: %v", err)
-	}
-
-	// 打印结果
-	logger.Info("获取到随机数结果:")
-	for i, num := range randomNumbers {
-		logger.Infof("随机数 %d: %s", i+1, num.String())
-	}
-
-	for {
+	// 创建并运行服务器
+	srv := server.NewServer(cfg)
+	if err := srv.Run(); err != nil {
+		logger.Fatalf("启动服务器失败: %v", err)
 	}
 }

@@ -39,7 +39,7 @@ type VRFClient struct {
 	maxRetries     int
 }
 
-func NewVRFClient(ctx context.Context, cfg *config.Config) (*VRFClient, error) {
+func NewVRFClient(cfg *config.Config) (*VRFClient, error) {
 	logger.Info("初始化VRF客户端")
 
 	// 初始化私钥
@@ -73,7 +73,7 @@ func NewVRFClient(ctx context.Context, cfg *config.Config) (*VRFClient, error) {
 	// 初始化主网络
 	go func() {
 		defer wg.Done()
-		if err := client.initializeNetworkWithRetry(ctx, cfg.Networks.Primary, privateKey); err != nil {
+		if err := client.initializeNetworkWithRetry(cfg.Networks.Primary, privateKey); err != nil {
 			errChan <- fmt.Errorf("初始化主网络失败: %w", err)
 			return
 		}
@@ -83,7 +83,7 @@ func NewVRFClient(ctx context.Context, cfg *config.Config) (*VRFClient, error) {
 	// 初始化备用网络
 	go func() {
 		defer wg.Done()
-		if err := client.initializeNetworkWithRetry(ctx, cfg.Networks.Fallback, privateKey); err != nil {
+		if err := client.initializeNetworkWithRetry(cfg.Networks.Fallback, privateKey); err != nil {
 			errChan <- fmt.Errorf("初始化备用网络失败: %w", err)
 			return
 		}
@@ -113,12 +113,12 @@ func NewVRFClient(ctx context.Context, cfg *config.Config) (*VRFClient, error) {
 	}
 
 	// 启动网络健康检查
-	go client.startHealthCheck(ctx)
+	go client.startHealthCheck()
 
 	return client, nil
 }
 
-func (c *VRFClient) initializeNetworkWithRetry(ctx context.Context, network config.NetworkConfig, privateKey *ecdsa.PrivateKey) error {
+func (c *VRFClient) initializeNetworkWithRetry(network config.NetworkConfig, privateKey *ecdsa.PrivateKey) error {
 	var lastErr error
 	for i := 0; i < c.maxRetries; i++ {
 		if i > 0 {
@@ -126,7 +126,7 @@ func (c *VRFClient) initializeNetworkWithRetry(ctx context.Context, network conf
 			time.Sleep(c.retryInterval)
 		}
 
-		client, contractInstance, auth, err := initializeNetwork(ctx, network, privateKey)
+		client, contractInstance, auth, err := initializeNetwork(network, privateKey)
 		if err != nil {
 			lastErr = err
 			logger.Errorf("初始化网络 %s 失败: %v", network.Name, err)
@@ -144,24 +144,22 @@ func (c *VRFClient) initializeNetworkWithRetry(ctx context.Context, network conf
 	return fmt.Errorf("在 %d 次尝试后仍然失败: %w", c.maxRetries, lastErr)
 }
 
-func (c *VRFClient) startHealthCheck(ctx context.Context) {
+func (c *VRFClient) startHealthCheck() {
 	ticker := time.NewTicker(c.config.VRF.HealthCheck.Interval)
 	defer ticker.Stop()
 
 	for {
 		select {
-		case <-ctx.Done():
-			return
 		case <-ticker.C:
-			c.checkNetworkHealth(ctx)
+			c.checkNetworkHealth()
 		}
 	}
 }
 
-func (c *VRFClient) checkNetworkHealth(ctx context.Context) {
+func (c *VRFClient) checkNetworkHealth() {
 	for name, status := range c.networks {
 		// 创建一个带超时的上下文
-		checkCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
+		checkCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		_, err := status.client.ChainID(checkCtx)
 		cancel()
 
@@ -343,7 +341,7 @@ func (c *VRFClient) Close() {
 	}
 }
 
-func initializeNetwork(ctx context.Context, network config.NetworkConfig, privateKey *ecdsa.PrivateKey) (*ethclient.Client, *contract.RandomNumber, *bind.TransactOpts, error) {
+func initializeNetwork(network config.NetworkConfig, privateKey *ecdsa.PrivateKey) (*ethclient.Client, *contract.RandomNumber, *bind.TransactOpts, error) {
 	// 连接网络
 	client, err := ethclient.Dial(network.RPCURL)
 	if err != nil {
@@ -351,7 +349,7 @@ func initializeNetwork(ctx context.Context, network config.NetworkConfig, privat
 	}
 
 	// 获取chainID
-	chainID, err := client.ChainID(ctx)
+	chainID, err := client.ChainID(context.Background())
 	if err != nil {
 		client.Close()
 		return nil, nil, nil, fmt.Errorf("获取chainID失败: %w", err)

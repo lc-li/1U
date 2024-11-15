@@ -2,7 +2,6 @@ package config
 
 import (
 	"fmt"
-	"os"
 	"strings"
 	"time"
 
@@ -12,6 +11,7 @@ import (
 type Config struct {
 	Networks NetworksConfig `mapstructure:"networks"`
 	VRF      VRFConfig      `mapstructure:"vrf"`
+	Server   ServerConfig   `mapstructure:"server"`
 	Log      LogConfig      `mapstructure:"log"`
 }
 
@@ -54,8 +54,22 @@ type LogConfig struct {
 	FilePath string `mapstructure:"file_path"`
 }
 
+type ServerConfig struct {
+	Mode         string        `mapstructure:"mode"`
+	Port         int           `mapstructure:"port"`
+	ReadTimeout  time.Duration `mapstructure:"read_timeout"`
+	WriteTimeout time.Duration `mapstructure:"write_timeout"`
+}
+
+var configInstance *Config
+
+func GetConfig() *Config {
+	return configInstance
+}
+
 func LoadConfig(path string) (*Config, error) {
 	viper.SetConfigFile(path)
+	viper.SetConfigType("yaml")
 
 	// 启用环境变量替换
 	viper.SetEnvPrefix("")
@@ -67,21 +81,12 @@ func LoadConfig(path string) (*Config, error) {
 		return nil, fmt.Errorf("读取配置文件失败: %w", err)
 	}
 
-	// 处理环境变量替换
-	for _, k := range viper.AllKeys() {
-		val := viper.GetString(k)
-		if strings.HasPrefix(val, "${") && strings.HasSuffix(val, "}") {
-			envVar := strings.TrimSuffix(strings.TrimPrefix(val, "${"), "}")
-			if envVal := os.Getenv(envVar); envVal != "" {
-				viper.Set(k, envVal)
-			}
-		}
-	}
-
-	var config Config
-	if err := viper.Unmarshal(&config); err != nil {
+	// 解析配置
+	var cfg Config
+	if err := viper.Unmarshal(&cfg); err != nil {
 		return nil, fmt.Errorf("解析配置失败: %w", err)
 	}
 
-	return &config, nil
+	configInstance = &cfg
+	return &cfg, nil
 }

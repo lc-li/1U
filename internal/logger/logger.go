@@ -59,7 +59,7 @@ func InitLogger(level, format, output string) error {
 
 func openLogFile() (*os.File, error) {
 	now := time.Now()
-	logDir := "/root/logs"
+	logDir := "logs"
 
 	// 创建年月日目录
 	yearDir := filepath.Join(logDir, now.Format("2006"))

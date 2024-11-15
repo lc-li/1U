@@ -28,10 +28,10 @@ FROM alpine:latest
 # 安装 ca-certificates，这对于 HTTPS 请求是必要的
 RUN apk --no-cache add ca-certificates
 
-WORKDIR /root/
-
-# 创建日志目录
-RUN mkdir -p /root/logs
+WORKDIR /app
+RUN mkdir -p /app/logs
+RUN chmod 777 /app/logs
+VOLUME ["/app/logs"]
 
 # 从构建阶段复制二进制文件
 COPY --from=builder /app/main .
@@ -40,12 +40,6 @@ COPY --from=builder /app/config/config.yaml ./config/config.yaml
 
 # 设置环境变量
 ENV CONFIG_PATH="config/config.yaml"
-
-# 确保日志目录有正确的权限
-RUN chmod 777 /root/logs
-
-# 创建日志目录
-VOLUME ["/root/logs"]
 
 # 运行应用
 CMD ["./main"] 
