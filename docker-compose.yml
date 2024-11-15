@@ -14,8 +14,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '1'    # 分配1个CPU核心
-          memory: 2G   # 分配2GB内存
+          cpus: '1'    # 最大使用 1 个 CPU 核心
+          memory: 2G   # 最大使用 2GB 内存
         reservations:
-          cpus: '0.5'
-          memory: 1G
+          cpus: '0.5'  # 保证至少 0.5 个 CPU 核心
+          memory: 1G   # 保证至少 1GB 内存

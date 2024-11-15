@@ -96,21 +96,64 @@ jobs:
         username: ubuntu
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         script: |
-          sudo bash -c 'cat > /etc/nginx/sites-available/default << EOF
-          server {
-              listen 80;
-              server_name ec2-13-55-71-77.ap-southeast-2.compute.amazonaws.com;
+          # 检查是否已经存在配置
+          if [ ! -f /etc/nginx/nginx.conf.original ]; then
+            # 第一次运行时备份原始配置
+            sudo cp /etc/nginx/nginx.conf /etc/nginx/nginx.conf.original
+          fi
+          
+          # 检查配置是否需要更新
+          TEMP_CONFIG=$(mktemp)
+          cat > $TEMP_CONFIG << "EOF"
+          worker_processes 1;
 
-              location / {
-                  proxy_pass http://127.0.0.1:8080;
-                  proxy_set_header Host \$host;
-                  proxy_set_header X-Real-IP \$remote_addr;
-                  proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-                  proxy_set_header X-Forwarded-Proto \$scheme;
+          events {
+              worker_connections 1024;
+              multi_accept on;
+          }
+
+          http {
+              sendfile on;
+              tcp_nopush on;
+              tcp_nodelay on;
+              keepalive_timeout 65;
+              
+              # ... 其他配置 ...
+
+              server {
+                  listen 80;
+                  server_name ec2-13-55-71-77.ap-southeast-2.compute.amazonaws.com;
+                  
+                  location / {
+                      proxy_pass http://127.0.0.1:8080;
+                      proxy_set_header Host $host;
+                      proxy_set_header X-Real-IP $remote_addr;
+                  }
               }
           }
-          EOF'
-          sudo systemctl restart nginx
+          EOF
+          
+          # 比较配置文件
+          if ! sudo diff -q $TEMP_CONFIG /etc/nginx/nginx.conf > /dev/null; then
+            # 配置有变化时才更新
+            sudo mv $TEMP_CONFIG /etc/nginx/nginx.conf
+            
+            # 测试新配置
+            if sudo nginx -t; then
+              # 配置正确才重启
+              sudo systemctl restart nginx
+              echo "Nginx configuration updated and service restarted"
+            else
+              # 配置错误时恢复原配置
+              sudo cp /etc/nginx/nginx.conf.original /etc/nginx/nginx.conf
+              sudo systemctl restart nginx
+              echo "Nginx configuration test failed, restored original config"
+              exit 1
+            fi
+          else
+            echo "Nginx configuration unchanged"
+            rm $TEMP_CONFIG
+          fi
 
     - name: Start application
       uses: appleboy/ssh-action@master
@@ -137,3 +180,76 @@ jobs:
             -e INFURA_BSC_URL="${{ secrets.INFURA_BSC_URL }}" \
             game-server
           docker image prune -f
+
+    - name: Configure log rotation
+      uses: appleboy/ssh-action@master
+      with:
+        host: ec2-13-55-71-77.ap-southeast-2.compute.amazonaws.com
+        username: ubuntu
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        script: |
+          # 创建 logrotate 配置文件
+          sudo tee /etc/logrotate.d/game-server << 'EOF'
+          /home/ubuntu/game-server/logs/*/*.log {
+            daily                   # 每天轮转
+            rotate 7               # 保留 7 天的日志
+            maxsize 100M          # 单个日志文件最大 100MB
+            missingok             # 如果日志文件不存在也不报错
+            compress             # 压缩旧的日志文件
+            delaycompress        # 延迟压缩到下一个循环
+            notifempty           # 当日志为空时不轮转
+            create 0644 ubuntu ubuntu  # 新建日志文件的权限和所有者
+            dateext              # 使用日期作为后缀
+            dateformat -%Y%m%d   # 日期格式
+            sharedscripts
+            postrotate
+              # 发送 USR1 信号给 Nginx，重新打开日志文件
+              [ -f /var/run/nginx.pid ] && kill -USR1 $(cat /var/run/nginx.pid)
+            endscript
+          }
+          EOF
+
+          # 测试 logrotate 配置
+          sudo logrotate -d /etc/logrotate.d/game-server
+
+          # 设置正确的权限
+          sudo chown root:root /etc/logrotate.d/game-server
+          sudo chmod 644 /etc/logrotate.d/game-server
+
+          # 立即执行一次 logrotate
+          sudo logrotate -f /etc/logrotate.d/game-server
+
+    - name: Setup disk space monitor
+      uses: appleboy/ssh-action@master
+      with:
+        host: ec2-13-55-71-77.ap-southeast-2.compute.amazonaws.com
+        username: ubuntu
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        script: |
+          # 创建监控脚本
+          sudo tee /usr/local/bin/check-disk-space.sh << 'EOF'
+          #!/bin/bash
+          
+          LOG_DIR="/home/ubuntu/game-server/logs"
+          MAX_USAGE_PERCENT=80
+          
+          # 检查磁盘使用率
+          USAGE=$(df / | tail -1 | awk '{print $5}' | sed 's/%//')
+          
+          if [ "$USAGE" -gt "$MAX_USAGE_PERCENT" ]; then
+            echo "磁盘使用率超过 ${MAX_USAGE_PERCENT}%，清理旧日志..."
+            
+            # 删除 30 天前的日志
+            find $LOG_DIR -type f -name "*.log" -mtime +30 -delete
+            find $LOG_DIR -type f -name "*.log.gz" -mtime +30 -delete
+            
+            # 清理空目录
+            find $LOG_DIR -type d -empty -delete
+          fi
+          EOF
+          
+          # 设置执行权限
+          sudo chmod +x /usr/local/bin/check-disk-space.sh
+          
+          # 添加到 crontab
+          (crontab -l 2>/dev/null; echo "0 0 * * * /usr/local/bin/check-disk-space.sh") | crontab -
