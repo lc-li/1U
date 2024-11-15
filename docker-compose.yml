@@ -11,3 +11,11 @@ services:
       - PRIVATE_KEY=${PRIVATE_KEY}
       - INFURA_POLYGON_URL=${INFURA_POLYGON_URL}
       - INFURA_BSC_URL=${INFURA_BSC_URL} 
+    deploy:
+      resources:
+        limits:
+          cpus: '1'    # 分配1个CPU核心
+          memory: 2G   # 分配2GB内存
+        reservations:
+          cpus: '0.5'
+          memory: 1G
