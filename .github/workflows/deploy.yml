@@ -184,7 +184,7 @@ jobs:
           TEMP_LOGROTATE=$(mktemp)
           
           cat > $TEMP_LOGROTATE << 'EOF'
-          /home/ubuntu/game-server/logs/*/*.log {
+          /home/ubuntu/game-server/logs/*/*/app-*.log {
             daily
             rotate 7
             maxsize 100M
